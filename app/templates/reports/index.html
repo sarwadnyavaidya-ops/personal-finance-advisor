@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Monthly Financial Reports — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}Monthly Financial Monitoring & Reports{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 no-print">
+  <div>
+    <h4 class="fw-bold mb-1">Monthly Financial Report</h4>
+    <p class="text-muted small mb-0">Consolidated financial statement, cashflow balance, budget compliance, and goals progress</p>
+  </div>
+
+  <div class="d-flex align-items-center gap-2">
+    <!-- Month Switcher Form -->
+    <form method="GET" action="{{ url_for('reports.index') }}" class="d-flex gap-1">
+      <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+            {{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }}
+          </option>
+        {% endfor %}
+      </select>
+      <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+        {% for y in range(current_year - 2, current_year + 2) %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <a href="{{ url_for('reports.print_view', year=selected_year, month=selected_month) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer me-1"></i> Print / PDF
+    </a>
+
+    <form method="POST" action="{{ url_for('reports.save_report') }}" class="d-inline">
+      <input type="hidden" name="year" value="{{ selected_year }}">
+      <input type="hidden" name="month" value="{{ selected_month }}">
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-archive me-1"></i> Archive Report
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Report Document Sheet -->
+<div class="card shadow-sm border rounded-4 p-4 p-md-5 bg-white mb-4">
+  <!-- Report Header -->
+  <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 text-primary fw-bold fs-4 mb-1">
+        <i class="bi bi-wallet2"></i>
+        <span>Personal Finance Advisor</span>
+      </div>
+      <h3 class="fw-bold text-dark mb-0">Financial Performance Statement</h3>
+      <div class="text-muted small">Period: <strong>{{ summary.month_name }} {{ selected_year }}</strong></div>
+    </div>
+    <div class="text-end">
+      <div class="fw-semibold">{{ current_user.full_name }}</div>
+      <div class="text-muted small">{{ current_user.email }}</div>
+      <div class="badge bg-{{ health.badge_class }} mt-2">Health: {{ health.status }}</div>
+    </div>
+  </div>
+
+  <!-- Key Metrics 4-Box Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="p-3 border rounded bg-light">
+        <div class="text-muted small text-uppercase fw-semibold">Total Inflow</div>
+        <div class="fs-4 fw-bold text-success">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_income) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-3 border rounded bg-light">
+        <div class="text-muted small text-uppercase fw-semibold">Total Outflow</div>
+        <div class="fs-4 fw-bold text-danger">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_expense) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-3 border rounded bg-light">
+        <div class="text-muted small text-uppercase fw-semibold">Net Cashflow</div>
+        <div class="fs-4 fw-bold {% if summary.net_cashflow >= 0 %}text-primary{% else %}text-danger{% endif %}">
+          {{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.net_cashflow) }}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="p-3 border rounded bg-light">
+        <div class="text-muted small text-uppercase fw-semibold">Savings Retained</div>
+        <div class="fs-4 fw-bold text-dark">{{ summary.savings_rate }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Category Spending Breakdown -->
+  <div class="mb-4">
+    <h5 class="fw-bold border-bottom pb-2 mb-3">1. Category-Wise Outflows</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Category</th>
+            <th>Type</th>
+            <th class="text-end">Amount</th>
+            <th class="text-end">Percentage of Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in summary.categories_breakdown %}
+            <tr>
+              <td class="fw-semibold">{{ c.category_name }}</td>
+              <td>{{ c.category_type }}</td>
+              <td class="text-end">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(c.amount) }}</td>
+              <td class="text-end">{{ c.percentage }}%</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="text-center text-muted p-3">No expenses recorded for this month.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section: Budget Compliance -->
+  <div class="mb-4">
+    <h5 class="fw-bold border-bottom pb-2 mb-3">2. Budget Compliance & Utilization</h5>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="p-3 border rounded">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Total Effective Budget:</span>
+            <span class="fw-bold">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(budget_status.effective_budget) }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Actual Spent:</span>
+            <span class="fw-bold text-danger">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(budget_status.effective_spent) }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted small">Variance (Remaining):</span>
+            <span class="fw-bold {% if budget_status.remaining_budget < 0 %}text-danger{% else %}text-success{% endif %}">
+              {{ current_user.currency_symbol }}{{ "{:,.2f}".format(budget_status.remaining_budget) }}
+            </span>
+          </div>
+          <div class="progress progress-thin">
+            <div class="progress-bar {% if budget_status.overall_utilization > 100 %}bg-danger{% else %}bg-primary{% endif %}" style="width: {{ [budget_status.overall_utilization, 100]|min }}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded bg-light">
+          <div class="fw-semibold small text-uppercase text-secondary mb-2">Compliance Warnings</div>
+          {% if budget_status.warnings %}
+            <ul class="list-unstyled mb-0 small text-danger">
+              {% for w in budget_status.warnings %}
+                <li><i class="bi bi-exclamation-circle me-1"></i>{{ w }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-success small"><i class="bi bi-check-circle me-1"></i>All category budgets operated within limits.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Goals Progress -->
+  <div class="mb-4">
+    <h5 class="fw-bold border-bottom pb-2 mb-3">3. Financial Goals Progress</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Goal Name</th>
+            <th class="text-end">Target</th>
+            <th class="text-end">Current</th>
+            <th class="text-end">Progress</th>
+            <th class="text-end">Target Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in goals %}
+            <tr>
+              <td class="fw-semibold">{{ g.name }}</td>
+              <td class="text-end">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(g.target_amount) }}</td>
+              <td class="text-end">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(g.current_amount) }}</td>
+              <td class="text-end">{{ g.percentage_complete }}%</td>
+              <td class="text-end">{{ g.target_date.strftime('%b %d, %Y') }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" class="text-center text-muted p-3">No financial goals configured.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer Disclaimer -->
+  <div class="border-top pt-3 text-muted small fst-italic">
+    Generated by Personal Finance Advisor Bot &middot; AI-powered financial monitoring system &middot; For informational use only.
+  </div>
+</div>
+{% endblock %}

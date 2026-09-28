@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Savings Tracking — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}Savings Tracking & Growth{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Savings & Emergency Reserves</h4>
+    <p class="text-muted small mb-0">Record savings deposits, monitor compound accumulation, and track emergency fund runway</p>
+  </div>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSavingsModal">
+    <i class="bi bi-plus-circle me-1"></i> Record Deposit
+  </button>
+</div>
+
+<!-- Savings Metrics Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <span class="text-muted small fw-semibold text-uppercase">Cumulative Savings</span>
+      <div class="stat-value text-primary">
+        {{ current_user.currency_symbol }}{{ "{:,.2f}".format(cumulative_savings) }}
+      </div>
+      <div class="small text-muted mt-1">Total across all deposits</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <span class="text-muted small fw-semibold text-uppercase">Current Month Saved</span>
+      <div class="stat-value text-success">
+        {{ current_user.currency_symbol }}{{ "{:,.2f}".format(monthly_saved) }}
+      </div>
+      <div class="small text-muted mt-1">
+        Target: {{ current_user.currency_symbol }}{{ "{:,.2f}".format(current_user.monthly_savings_target) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <span class="text-muted small fw-semibold text-uppercase">Emergency Runway</span>
+      <div class="stat-value text-info">
+        {{ emergency_status.runway_months }} Months
+      </div>
+      <div class="small text-muted mt-1">Living expense buffer</div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <span class="text-muted small fw-semibold text-uppercase">Emergency Fund Target</span>
+      <div class="stat-value text-dark">
+        {{ emergency_status.progress_percentage }}%
+      </div>
+      <div class="small text-muted mt-1">
+        {{ current_user.currency_symbol }}{{ "{:,.2f}".format(emergency_status.remaining) }} remaining
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Savings Growth Chart -->
+<div class="card-custom mb-4">
+  <div class="card-header">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-graph-up-arrow text-primary"></i>
+      <span>Cumulative Savings Timeline</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="chart-container" style="height: 240px;">
+      <canvas id="savingsGrowthChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Savings Records Table -->
+<div class="card-custom">
+  <div class="card-header">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-cash-stack text-success"></i>
+      <span>Savings Deposits & Transfers</span>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    {% if savings_records %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr class="small text-muted">
+              <th>Date</th>
+              <th>Account / Source</th>
+              <th>Description</th>
+              <th class="text-end">Amount</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in savings_records %}
+              <tr>
+                <td class="small">{{ s.date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                  <span class="badge badge-soft-primary">{{ s.source }}</span>
+                </td>
+                <td class="small">{{ s.description or '-' }}</td>
+                <td class="text-end fw-bold text-success">
+                  +{{ current_user.currency_symbol }}{{ "{:,.2f}".format(s.amount) }}
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-1">
+                    <a href="{{ url_for('savings.edit', savings_id=s.id) }}" class="btn btn-sm btn-light border p-1" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('savings.delete', savings_id=s.id) }}" onsubmit="return confirm('Delete this savings record?');">
+                      <button type="submit" class="btn btn-sm btn-light border text-danger p-1" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-5 text-center text-muted">
+        <i class="bi bi-piggy-bank fs-2 text-secondary mb-2 d-block"></i>
+        <h6>No savings deposits recorded yet.</h6>
+        <p class="small mb-3">Record money set aside in high-yield savings, emergency funds, or investments.</p>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSavingsModal">
+          <i class="bi bi-plus-circle me-1"></i> Record First Deposit
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal: Add Savings Deposit -->
+<div class="modal fade" id="addSavingsModal" tabindex="-1" aria-labelledby="addSavingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('savings.add') }}">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="addSavingsModalLabel">Record Savings Deposit</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Amount Saved</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ current_user.currency_symbol }}</span>
+              <input type="number" step="0.01" min="0.01" name="amount" class="form-control" placeholder="0.00" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Savings Vehicle / Destination</label>
+            <select name="source" class="form-select" required>
+              {% for src in sources %}
+                <option value="{{ src }}">{{ src }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Date</label>
+            <input type="date" name="date" class="form-control" value="{{ today.strftime('%Y-%m-%d') }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Description / Purpose</label>
+            <input type="text" name="description" class="form-control" placeholder="e.g. Paycheck automatic split, Emergency fund top-up">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm px-3">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById("savingsGrowthChart");
+  if (ctx) {
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [{% for lbl in growth_labels %}"{{ lbl }}",{% endfor %}],
+        datasets: [{
+          label: "Cumulative Savings ({{ current_user.currency_symbol }})",
+          data: [{% for val in growth_data %}{{ val }},{% endfor %}],
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37, 99, 235, 0.12)",
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (val) => "{{ current_user.currency_symbol }}" + val.toLocaleString() }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

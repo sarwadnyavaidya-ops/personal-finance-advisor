@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Health Evaluation — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}Financial Health Diagnostic{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">Financial Health Evaluation</h4>
+    <p class="text-muted small mb-0">Multi-factor diagnostic assessing savings pace, living cost runway, burn rate, and budget discipline</p>
+  </div>
+  <form method="GET" action="{{ url_for('analysis.health') }}" class="d-flex gap-1">
+    <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+      {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+          {{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }}
+        </option>
+      {% endfor %}
+    </select>
+    <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+      {% for y in range(current_year - 2, current_year + 2) %}
+        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<!-- Score Hero Card -->
+<div class="card-custom mb-4 border-{{ health.badge_class }}">
+  <div class="card-body p-4">
+    <div class="row align-items-center">
+      <div class="col-md-4 text-center border-end-md">
+        <div class="d-inline-flex p-3 rounded-circle bg-{{ health.badge_class }}-subtle text-{{ health.badge_class }} mb-2">
+          <i class="bi bi-heart-pulse-fill display-4"></i>
+        </div>
+        <h2 class="fw-bold mb-0 text-{{ health.badge_class }}">{{ health.status }}</h2>
+        <div class="text-muted small">Diagnostic Score: {{ health.score }} / 100</div>
+      </div>
+
+      <div class="col-md-8 ps-md-4 mt-3 mt-md-0">
+        <h6 class="fw-bold text-dark mb-2">Why was this evaluation generated?</h6>
+        <ul class="list-unstyled mb-3">
+          {% for r in health.reasons %}
+            <li class="d-flex align-items-start gap-2 mb-2 small">
+              <i class="bi bi-arrow-right-circle text-{{ health.badge_class }} mt-1"></i>
+              <span>{{ r }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+        <div class="alert alert-light border small text-muted mb-0 py-2">
+          <i class="bi bi-info-circle me-1"></i> This health diagnostic is an educational assessment calculated from your recorded transactions and targets, not a professional financial diagnosis.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 Core Health Indicators -->
+<div class="row g-4 mb-4">
+  <!-- 1. Savings Rate -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card-custom h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small fw-semibold text-muted text-uppercase">1. Savings Rate</span>
+          <i class="bi bi-piggy-bank text-success fs-5"></i>
+        </div>
+        <h3 class="fw-bold mb-1">{{ summary.savings_rate }}%</h3>
+        <div class="progress progress-thin mb-2">
+          <div class="progress-bar bg-success" style="width: {{ [summary.savings_rate, 100]|min }}%"></div>
+        </div>
+        <div class="small text-muted">
+          Recommended target: &ge; 20% of net income.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Expense-to-Income Ratio -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card-custom h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small fw-semibold text-muted text-uppercase">2. Expense Ratio</span>
+          <i class="bi bi-speedometer2 text-warning fs-5"></i>
+        </div>
+        <h3 class="fw-bold mb-1">{{ summary.expense_to_income_ratio }}%</h3>
+        <div class="progress progress-thin mb-2">
+          <div class="progress-bar {% if summary.expense_to_income_ratio > 90 %}bg-danger{% else %}bg-primary{% endif %}" style="width: {{ [summary.expense_to_income_ratio, 100]|min }}%"></div>
+        </div>
+        <div class="small text-muted">
+          Recommended target: &le; 70-80% to retain wealth.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Emergency Runway -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card-custom h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small fw-semibold text-muted text-uppercase">3. Emergency Buffer</span>
+          <i class="bi bi-shield-lock text-info fs-5"></i>
+        </div>
+        <h3 class="fw-bold mb-1">{{ emergency_status.runway_months }} Months</h3>
+        <div class="progress progress-thin mb-2">
+          <div class="progress-bar bg-info" style="width: {{ [(emergency_status.runway_months / 6.0 * 100), 100]|min }}%"></div>
+        </div>
+        <div class="small text-muted">
+          3-6 months essential expenses in reserve.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Budget Discipline -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card-custom h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small fw-semibold text-muted text-uppercase">4. Budget Discipline</span>
+          <i class="bi bi-check2-square text-primary fs-5"></i>
+        </div>
+        <h3 class="fw-bold mb-1">{{ budget_status.overall_utilization }}%</h3>
+        <div class="progress progress-thin mb-2">
+          <div class="progress-bar {% if budget_status.overall_utilization > 100 %}bg-danger{% else %}bg-primary{% endif %}" style="width: {{ [budget_status.overall_utilization, 100]|min }}%"></div>
+        </div>
+        <div class="small text-muted">
+          {% if budget_status.has_budget %}Pacing against active envelope{% else %}No strict budget cap set{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Savings & Cost Optimization Tactics -->
+<div class="card-custom mb-4">
+  <div class="card-header">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-lightbulb text-warning"></i>
+      <span>Actionable Savings & Cost Optimization Strategies</span>
+    </div>
+    <span class="badge bg-primary">{{ savings_recommendations.source }}</span>
+  </div>
+  <div class="card-body">
+    <div class="p-2 markdown-content" style="line-height: 1.6;">
+      {{ savings_recommendations.recommendations | replace('\n', '<br>') | safe }}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Personal Finance Advisor Bot{% endblock %}</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom FinTech Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <a href="{{ url_for('main.dashboard') }}" class="sidebar-brand">
+      <i class="bi bi-wallet2 text-primary"></i>
+      <span>Finance Advisor</span>
+    </a>
+
+    <div class="sidebar-nav">
+      <div class="nav-category">Main Menu</div>
+      <a href="{{ url_for('main.dashboard') }}" class="nav-link-custom {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('income.index') }}" class="nav-link-custom {% if 'income' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-arrow-down-left-circle-fill text-success"></i>
+        <span>Income</span>
+      </a>
+      <a href="{{ url_for('expense.index') }}" class="nav-link-custom {% if 'expense' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-arrow-up-right-circle-fill text-danger"></i>
+        <span>Expenses</span>
+      </a>
+      <a href="{{ url_for('budget.index') }}" class="nav-link-custom {% if 'budget' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-pie-chart-fill text-warning"></i>
+        <span>Budget Planning</span>
+      </a>
+      <a href="{{ url_for('savings.index') }}" class="nav-link-custom {% if 'savings' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-piggy-bank-fill text-primary"></i>
+        <span>Savings</span>
+      </a>
+      <a href="{{ url_for('goals.index') }}" class="nav-link-custom {% if 'goals' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-bullseye text-info"></i>
+        <span>Financial Goals</span>
+      </a>
+
+      <div class="nav-category">AI & Analytics</div>
+      <a href="{{ url_for('analysis.spending') }}" class="nav-link-custom {% if request.endpoint == 'analysis.spending' %}active{% endif %}">
+        <i class="bi bi-graph-up-arrow text-primary"></i>
+        <span>Spending Analysis</span>
+      </a>
+      <a href="{{ url_for('analysis.health') }}" class="nav-link-custom {% if request.endpoint == 'analysis.health' %}active{% endif %}">
+        <i class="bi bi-heart-pulse-fill text-danger"></i>
+        <span>Financial Health</span>
+      </a>
+      <a href="{{ url_for('advisor.index') }}" class="nav-link-custom {% if 'advisor' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-robot text-primary"></i>
+        <span>AI Advisor Chat</span>
+      </a>
+      <a href="{{ url_for('reports.index') }}" class="nav-link-custom {% if 'reports' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-file-earmark-bar-graph-fill text-secondary"></i>
+        <span>Monthly Reports</span>
+      </a>
+
+      <div class="nav-category">Account & Alerts</div>
+      <a href="{{ url_for('alerts.index') }}" class="nav-link-custom {% if 'alerts' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-bell-fill text-warning"></i>
+        <span>Alerts</span>
+        {% if unread_alerts_count > 0 %}
+          <span class="badge bg-danger rounded-pill ms-auto">{{ unread_alerts_count }}</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('auth.profile') }}" class="nav-link-custom {% if request.endpoint == 'auth.profile' %}active{% endif %}">
+        <i class="bi bi-person-circle"></i>
+        <span>Profile Settings</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="nav-link-custom text-muted">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </a>
+    </div>
+
+    <!-- User Profile Strip in Sidebar Footer -->
+    <div class="p-3 border-top bg-light d-flex align-items-center gap-2">
+      <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+        {{ current_user.full_name[:1] | upper }}
+      </div>
+      <div class="overflow-hidden">
+        <div class="fw-semibold text-truncate small">{{ current_user.full_name }}</div>
+        <div class="text-muted text-truncate" style="font-size: 0.75rem;">{{ current_user.email }}</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm d-lg-none" id="sidebarToggle" type="button" aria-label="Toggle navigation">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <span class="fw-semibold text-secondary d-none d-sm-inline">
+          {% block page_title %}Overview{% endblock %}
+        </span>
+      </div>
+
+      <!-- Quick Demo Scenario Switcher & Actions -->
+      <div class="d-flex align-items-center gap-2">
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-lightning-charge-fill text-warning"></i>
+            <span class="d-none d-md-inline">Load Demo Profile</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><h6 class="dropdown-header">Explore Built-in Use Cases</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.load_scenario', scenario='salaried') }}"><i class="bi bi-briefcase me-2 text-primary"></i>1. Salaried Professional</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.load_scenario', scenario='student') }}"><i class="bi bi-mortarboard me-2 text-info"></i>2. College Student</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.load_scenario', scenario='freelancer') }}"><i class="bi bi-laptop me-2 text-success"></i>3. Freelancer (Variable)</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.load_scenario', scenario='household') }}"><i class="bi bi-house-door me-2 text-warning"></i>4. Household Manager</a></li>
+          </ul>
+        </div>
+
+        <a href="{{ url_for('alerts.index') }}" class="btn btn-sm btn-light border position-relative" title="Alerts">
+          <i class="bi bi-bell"></i>
+          {% if unread_alerts_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+          {% endif %}
+        </a>
+
+        <a href="{{ url_for('auth.profile') }}" class="btn btn-sm btn-light border" title="Profile">
+          <i class="bi bi-gear"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Body Container -->
+    <main class="container-fluid p-3 p-md-4 flex-grow-1">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+              <i class="bi bi-info-circle me-1"></i> {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+      <div class="container-fluid d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+        <span>Personal Finance Advisor Bot &copy; {{ current_year }} &middot; AI-powered financial advisory</span>
+        <span class="text-secondary fst-italic" style="font-size: 0.78rem;">Informational only &middot; Not professional financial advice</span>
+      </div>
+    </footer>
+  </div>
+
+{% else %}
+  <!-- Public Layout (Landing, Login, Register) -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+        <i class="bi bi-wallet2 fs-4"></i>
+        <span>Finance Advisor</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="publicNav">
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-primary btn-sm px-3" href="{{ url_for('auth.register') }}">Create Free Account</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-success btn-sm px-3" href="{{ url_for('auth.load_scenario', scenario='salaried') }}">
+              <i class="bi bi-play-circle me-1"></i> Live Demo
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4 flex-grow-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block public_content %}{% endblock %}
+  </main>
+
+  <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+    <div class="container">
+      Personal Finance Advisor Bot &copy; {{ current_year }} &middot; All Rights Reserved
+    </div>
+  </footer>
+{% endif %}
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<!-- Application Scripts -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

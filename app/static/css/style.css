@@ -1,0 +1,312 @@
+/* Personal Finance Advisor Bot - Modern FinTech Design System */
+
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --secondary-color: #475569;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #06b6d4;
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --sidebar-width: 260px;
+  --card-radius: 12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* Sidebar navigation */
+.sidebar {
+  width: var(--sidebar-width);
+  background: #ffffff;
+  border-right: 1px solid var(--border-color);
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1020;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.sidebar-brand {
+  padding: 1.25rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+  text-decoration: none;
+}
+
+.sidebar-nav {
+  padding: 1rem 0.75rem;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.nav-category {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 0.75rem 0.35rem;
+}
+
+.nav-link-custom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  color: var(--secondary-color);
+  font-weight: 500;
+  font-size: 0.92rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  margin-bottom: 0.2rem;
+}
+
+.nav-link-custom:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.nav-link-custom.active {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.nav-link-custom i {
+  font-size: 1.15rem;
+  width: 22px;
+  text-align: center;
+}
+
+/* Main content area */
+.main-wrapper {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  .main-wrapper {
+    margin-left: 0;
+  }
+}
+
+/* Top bar */
+.top-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Cards & containers */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.stat-value {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0.25rem;
+}
+
+.card-custom {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  margin-bottom: 1.5rem;
+}
+
+.card-custom .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-custom .card-body {
+  padding: 1.25rem;
+}
+
+/* Charts */
+.chart-container {
+  position: relative;
+  height: 270px;
+  width: 100%;
+}
+
+/* Chat container */
+.chat-box {
+  height: 480px;
+  overflow-y: auto;
+  padding: 1.25rem;
+  background: #fdfdfd;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.85rem 1.15rem;
+  border-radius: 14px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.chat-bubble.user {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-bubble.assistant {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #e2e8f0;
+}
+
+.chat-bubble.assistant pre {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.chat-disclaimer {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+/* Progress bars */
+.progress-thin {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #f1f5f9;
+}
+
+/* Badges */
+.badge-soft-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge-soft-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-soft-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-soft-info {
+  background-color: #e0f2fe;
+  color: #075985;
+}
+
+.badge-soft-primary {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Quick scenario pills */
+.scenario-pill {
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.scenario-pill:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Print styling */
+@media print {
+  .sidebar, .top-navbar, .no-print, .btn {
+    display: none !important;
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  .card-custom {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Personal Finance Advisor Bot — AI-Powered Wealth & Budgeting Platform{% endblock %}
+
+{% block public_content %}
+<div class="row align-items-center py-5">
+  <div class="col-lg-7 text-center text-lg-start pe-lg-5">
+    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-primary-subtle text-primary fw-semibold small">
+      <i class="bi bi-stars"></i> Powered by Google Gemini AI & Smart Heuristics
+    </div>
+    <h1 class="display-4 fw-bold text-dark mb-3">
+      Master Your Money With Real-Time <span class="text-primary">AI Financial Guidance</span>
+    </h1>
+    <p class="lead text-muted mb-4">
+      An intelligent personal finance management platform designed for salaried professionals, college students, freelancers, and family households. Track income, budget automatically, eliminate leaks, and grow wealth.
+    </p>
+
+    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 shadow-sm">
+        <i class="bi bi-person-plus me-1"></i> Get Started Free
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Member Login
+      </a>
+    </div>
+
+    <!-- 4 Scenario Quick Launches -->
+    <div class="card p-3 border shadow-sm bg-light">
+      <div class="fw-semibold text-secondary small mb-2 text-uppercase">
+        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Or test instantly with a pre-loaded sample scenario:
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('auth.load_scenario', scenario='salaried') }}" class="scenario-pill">
+          <i class="bi bi-briefcase text-primary"></i> Salaried Pro
+        </a>
+        <a href="{{ url_for('auth.load_scenario', scenario='student') }}" class="scenario-pill">
+          <i class="bi bi-mortarboard text-info"></i> College Student
+        </a>
+        <a href="{{ url_for('auth.load_scenario', scenario='freelancer') }}" class="scenario-pill">
+          <i class="bi bi-laptop text-success"></i> Freelancer
+        </a>
+        <a href="{{ url_for('auth.load_scenario', scenario='household') }}" class="scenario-pill">
+          <i class="bi bi-house-door text-warning"></i> Household Manager
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5 mt-5 mt-lg-0">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+      <div class="card-header bg-dark text-white p-3 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-danger" style="width: 10px; height: 10px;"></div>
+          <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
+          <div class="rounded-circle bg-success" style="width: 10px; height: 10px;"></div>
+        </div>
+        <span class="small text-light">AI Advisor Live Preview</span>
+      </div>
+      <div class="card-body p-4 bg-light">
+        <div class="chat-bubble assistant mb-3 shadow-sm">
+          <div class="d-flex align-items-center gap-1 mb-1 text-primary fw-semibold small">
+            <i class="bi bi-robot"></i> Financial Advisor
+          </div>
+          <div class="small">
+            <strong>Spending Alert:</strong> You spent 28% more on entertainment this month compared to your category cap. Reallocating $75 from discretionary streaming will keep you on pace for your <strong>Tokyo Vacation</strong> goal!
+          </div>
+        </div>
+        <div class="chat-bubble user mb-3 shadow-sm">
+          <div class="small">How much should I keep in my emergency fund?</div>
+        </div>
+        <div class="chat-bubble assistant shadow-sm">
+          <div class="d-flex align-items-center gap-1 mb-1 text-primary fw-semibold small">
+            <i class="bi bi-robot"></i> Financial Advisor
+          </div>
+          <div class="small">
+            Based on your average living expense of $2,100/mo, a safe 3-to-6 month cushion is <strong>$6,300 – $12,600</strong> in high-yield savings.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features Grid -->
+<div class="row g-4 py-5 border-top">
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-icon bg-primary-subtle text-primary mb-3">
+        <i class="bi bi-calculator"></i>
+      </div>
+      <h5 class="fw-bold">Budget Planning Engine</h5>
+      <p class="text-muted small">
+        Compare planned limits vs real expenses, track budget utilization, and receive instant warnings when approaching category thresholds.
+      </p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-icon bg-success-subtle text-success mb-3">
+        <i class="bi bi-robot"></i>
+      </div>
+      <h5 class="fw-bold">Gemini AI Financial Advisor</h5>
+      <p class="text-muted small">
+        Chat interactively about expense reduction, custom budget generation, emergency savings runway, and prudent financial choices.
+      </p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-icon bg-warning-subtle text-warning mb-3">
+        <i class="bi bi-heart-pulse"></i>
+      </div>
+      <h5 class="fw-bold">Financial Health Score</h5>
+      <p class="text-muted small">
+        Holistic evaluation of savings rate, expense-to-income ratio, runway, and budget discipline with transparent "why" indicators.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

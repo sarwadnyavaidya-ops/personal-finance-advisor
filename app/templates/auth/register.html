@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — Personal Finance Advisor Bot{% endblock %}
+
+{% block public_content %}
+<div class="row justify-content-center py-4">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm border rounded-4 p-4 bg-white">
+      <div class="text-center mb-4">
+        <div class="d-inline-flex p-3 rounded-circle bg-primary-subtle text-primary mb-2">
+          <i class="bi bi-person-plus-fill fs-3"></i>
+        </div>
+        <h4 class="fw-bold">Create Account</h4>
+        <p class="text-muted small">Begin managing your personal finances with AI</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.register') }}">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Full Name</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" name="full_name" class="form-control" placeholder="e.g. Jane Doe" required autofocus>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label small fw-semibold">Preferred Currency</label>
+            <select name="preferred_currency" class="form-select">
+              <option value="USD" selected>USD ($)</option>
+              <option value="INR">INR (₹)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD (CA$)</option>
+              <option value="AUD">AUD (A$)</option>
+              <option value="JPY">JPY (¥)</option>
+              <option value="SGD">SGD (S$)</option>
+            </select>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label small fw-semibold">Monthly Income Baseline</label>
+            <input type="number" step="0.01" min="0" name="monthly_income" class="form-control" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+            <input type="password" name="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small fw-semibold">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+            <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" minlength="6" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="bi bi-check-circle me-1"></i> Register Account
+        </button>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top">
+        <span class="text-muted small">Already have an account?</span>
+        <a href="{{ url_for('auth.login') }}" class="small fw-semibold text-primary ms-1">Sign In</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

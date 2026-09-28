@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Goal — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}Edit Financial Goal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card-custom">
+      <div class="card-header">
+        <span class="fw-bold">Edit Goal: {{ goal.name }}</span>
+        <a href="{{ url_for('goals.index') }}" class="btn btn-sm btn-outline-secondary">Back</a>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('goals.edit', goal_id=goal.id) }}">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Goal Name</label>
+            <input type="text" name="name" class="form-control" value="{{ goal.name }}" required>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Target Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ current_user.currency_symbol }}</span>
+                <input type="number" step="0.01" min="0.01" name="target_amount" class="form-control" value="{{ goal.target_amount }}" required>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Current Saved Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ current_user.currency_symbol }}</span>
+                <input type="number" step="0.01" min="0" name="current_amount" class="form-control" value="{{ goal.current_amount }}" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Target Date</label>
+            <input type="date" name="target_date" class="form-control" value="{{ goal.target_date.strftime('%Y-%m-%d') }}" required>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Status</label>
+            <select name="status" class="form-select">
+              <option value="In Progress" {% if goal.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+              <option value="Achieved" {% if goal.status == 'Achieved' %}selected{% endif %}>Achieved</option>
+              <option value="On Hold" {% if goal.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+            </select>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{{ url_for('goals.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4">Update Goal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

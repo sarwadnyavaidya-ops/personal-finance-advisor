@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Access Forbidden (403) — Personal Finance Advisor Bot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 text-center">
+    <div class="display-1 text-danger mb-3"><i class="bi bi-shield-lock"></i></div>
+    <h3 class="fw-bold mb-2">403 — Access Forbidden</h3>
+    <p class="text-muted mb-4">You do not have permission to view or modify this financial resource.</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary px-4">
+      <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block public_content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 text-center">
+    <div class="display-1 text-danger mb-3"><i class="bi bi-shield-lock"></i></div>
+    <h3 class="fw-bold mb-2">403 — Access Forbidden</h3>
+    <p class="text-muted mb-4">Please log in with the correct account to access this page.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary px-4">Log In</a>
+  </div>
+</div>
+{% endblock %}

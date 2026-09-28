@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}AI Financial Advisor — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}AI Financial Advisor Assistant{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left Column: Context Snapshot & Quick Prompts -->
+  <div class="col-lg-4">
+    <!-- Live Financial Grounding Snapshot -->
+    <div class="card-custom mb-4">
+      <div class="card-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-shield-check text-success"></i>
+          <span>Live Context Grounding</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted mb-3">
+          The advisor uses your authentic financial numbers to give grounded, personalized answers:
+        </p>
+        <ul class="list-group list-group-flush small">
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Monthly Income:</span>
+            <span class="fw-bold text-success">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_income or current_user.monthly_income) }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Total Outflow:</span>
+            <span class="fw-bold text-danger">{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_expense) }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Top Burn Area:</span>
+            <span class="fw-semibold text-warning">{{ summary.highest_category.category_name or 'None' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Savings Rate:</span>
+            <span class="fw-bold text-primary">{{ summary.savings_rate }}%</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span class="text-muted">Emergency Buffer:</span>
+            <span class="fw-semibold">{{ emergency_status.runway_months }} Months</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Suggested Inquiry Pills -->
+    <div class="card-custom mb-4">
+      <div class="card-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-chat-quote text-primary"></i>
+          <span>Suggested Questions</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-column gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary text-start" onclick="askQuickQuestion('How can I reduce my expenses this month?')">
+            <i class="bi bi-scissors me-1 text-danger"></i> How can I reduce my expenses?
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary text-start" onclick="askQuickQuestion('Where am I overspending and how do I fix it?')">
+            <i class="bi bi-exclamation-triangle me-1 text-warning"></i> Where am I overspending?
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary text-start" onclick="askQuickQuestion('How much should I save this month according to the 50/30/20 rule?')">
+            <i class="bi bi-piggy-bank me-1 text-success"></i> How much should I save this month?
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary text-start" onclick="askQuickQuestion('How is my emergency fund looking and what is my next milestone?')">
+            <i class="bi bi-shield-lock me-1 text-info"></i> How is my emergency fund looking?
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary text-start" onclick="askQuickQuestion('What is a safe strategy for starting to invest surplus cash?')">
+            <i class="bi bi-graph-up me-1 text-primary"></i> What is a safe investing strategy?
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended Budget Blueprint Preview -->
+    <div class="card-custom">
+      <div class="card-header">
+        <span class="small fw-semibold text-muted text-uppercase">Budget Blueprint</span>
+        <span class="badge bg-primary">{{ budget_rec.source }}</span>
+      </div>
+      <div class="card-body p-3 small text-muted">
+        {{ budget_rec.budget_advice | replace('\n', '<br>') | safe }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Interactive Chat Interface -->
+  <div class="col-lg-8">
+    <div class="card-custom h-100 d-flex flex-column shadow-sm">
+      <div class="card-header bg-white">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-robot fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-bold mb-0">Gemini Financial Advisory Assistant</div>
+              <div class="text-success small" style="font-size: 0.75rem;">
+                <i class="bi bi-circle-fill me-1" style="font-size: 0.55rem;"></i> Active &bull; Ready to advise
+              </div>
+            </div>
+          </div>
+
+          <form method="POST" action="{{ url_for('advisor.clear_history') }}" onsubmit="return confirm('Clear chat history?');">
+            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Clear Chat History">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Messages Box -->
+      <div class="chat-box flex-grow-1" id="chatMessages">
+        <!-- Welcome Default Assistant Bubble -->
+        <div class="chat-bubble assistant">
+          <div class="d-flex align-items-center gap-1 mb-1 text-primary fw-semibold small">
+            <i class="bi bi-robot"></i> Financial Advisor
+          </div>
+          <div>
+            Hello {{ current_user.full_name }}! I am your AI Financial Advisor. I have examined your latest financial records (Total Income: <strong>{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_income or current_user.monthly_income) }}</strong>, Expenses: <strong>{{ current_user.currency_symbol }}{{ "{:,.2f}".format(summary.total_expense) }}</strong>, Top Category: <strong>{{ summary.highest_category.category_name or 'None' }}</strong>).
+            <br><br>
+            What financial questions or budgeting optimization goals can I help you tackle today?
+          </div>
+          <div class="text-end text-muted mt-1" style="font-size: 0.72rem;">Automated Advisor</div>
+        </div>
+
+        {% for msg in messages %}
+          <div class="chat-bubble {{ msg.role }}">
+            {% if msg.role == 'assistant' %}
+              <div class="d-flex align-items-center gap-1 mb-1 text-primary fw-semibold small">
+                <i class="bi bi-robot"></i> Financial Advisor
+              </div>
+            {% endif %}
+            <div>{{ msg.content | replace('\n', '<br>') | safe }}</div>
+            <div class="text-end {% if msg.role == 'user' %}text-light{% else %}text-muted{% endif %} mt-1" style="font-size: 0.72rem;">
+              {{ msg.created_at.strftime('%I:%M %p') }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="p-3 border-top bg-white">
+        <form id="chatForm" class="d-flex gap-2">
+          <input type="text" id="chatInput" class="form-control" placeholder="Type your financial question (e.g., 'How can I reduce expenses?')..." autocomplete="off" required>
+          <button type="submit" id="sendBtn" class="btn btn-primary px-3">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </form>
+        <div class="text-center chat-disclaimer mt-2">
+          <i class="bi bi-info-circle me-1"></i> AI-generated financial guidance is for informational purposes and is not professional financial advice.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

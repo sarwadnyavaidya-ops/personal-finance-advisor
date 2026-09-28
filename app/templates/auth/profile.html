@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile & Financial Targets — Personal Finance Advisor Bot{% endblock %}
+{% block page_title %}Profile Settings{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-custom">
+      <div class="card-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-person-gear text-primary"></i>
+          <span>Financial Profile & Targets</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.profile') }}">
+          <input type="hidden" name="action" value="update_profile">
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Full Name</label>
+            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Email Address (Account Identifier)</label>
+            <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+            <div class="form-text">Email address cannot be modified once registered.</div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Preferred Currency</label>
+              <select name="preferred_currency" class="form-select">
+                <option value="USD" {% if user.preferred_currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                <option value="INR" {% if user.preferred_currency == 'INR' %}selected{% endif %}>INR (₹)</option>
+                <option value="EUR" {% if user.preferred_currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                <option value="GBP" {% if user.preferred_currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+                <option value="CAD" {% if user.preferred_currency == 'CAD' %}selected{% endif %}>CAD (CA$)</option>
+                <option value="AUD" {% if user.preferred_currency == 'AUD' %}selected{% endif %}>AUD (A$)</option>
+                <option value="JPY" {% if user.preferred_currency == 'JPY' %}selected{% endif %}>JPY (¥)</option>
+                <option value="SGD" {% if user.preferred_currency == 'SGD' %}selected{% endif %}>SGD (S$)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Monthly Income Baseline</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ user.currency_symbol }}</span>
+                <input type="number" step="0.01" min="0" name="monthly_income" class="form-control" value="{{ user.monthly_income }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Monthly Savings Target</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ user.currency_symbol }}</span>
+                <input type="number" step="0.01" min="0" name="monthly_savings_target" class="form-control" value="{{ user.monthly_savings_target }}">
+              </div>
+              <div class="form-text">Used for savings rate & alerts tracking.</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label small fw-semibold">Emergency Fund Target</label>
+              <div class="input-group">
+                <span class="input-group-text">{{ user.currency_symbol }}</span>
+                <input type="number" step="0.01" min="0" name="emergency_fund_target" class="form-control" value="{{ user.emergency_fund_target }}">
+              </div>
+              <div class="form-text">Standard rule: 3-6 months living costs.</div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Financial Objectives / Notes</label>
+            <textarea name="financial_goals_summary" rows="3" class="form-control" placeholder="e.g. Save for house downpayment, reduce credit card balance, build investment portfolio...">{{ user.financial_goals_summary or '' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-1"></i> Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card-custom">
+      <div class="card-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-shield-lock text-warning"></i>
+          <span>Security & Password</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.profile') }}">
+          <input type="hidden" name="action" value="change_password">
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Current Password</label>
+            <input type="password" name="current_password" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">New Password</label>
+            <input type="password" name="new_password" class="form-control" minlength="6" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Confirm New Password</label>
+            <input type="password" name="confirm_new_password" class="form-control" minlength="6" required>
+          </div>
+
+          <button type="submit" class="btn btn-outline-warning w-100">
+            <i class="bi bi-key me-1"></i> Update Password
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick Scenario Reseed helper in profile -->
+    <div class="card-custom bg-light">
+      <div class="card-body">
+        <h6 class="fw-bold mb-2"><i class="bi bi-arrow-repeat text-primary me-1"></i> Switch Demo Profile</h6>
+        <p class="text-muted small mb-3">
+          Want to test how the advisor adjusts for a student, freelancer, or family? Select a scenario:
+        </p>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('auth.load_scenario', scenario='salaried') }}" class="btn btn-sm btn-outline-primary text-start">
+            <i class="bi bi-briefcase me-2"></i> Salaried Professional
+          </a>
+          <a href="{{ url_for('auth.load_scenario', scenario='student') }}" class="btn btn-sm btn-outline-info text-start">
+            <i class="bi bi-mortarboard me-2"></i> College Student
+          </a>
+          <a href="{{ url_for('auth.load_scenario', scenario='freelancer') }}" class="btn btn-sm btn-outline-success text-start">
+            <i class="bi bi-laptop me-2"></i> Freelancer (Variable Income)
+          </a>
+          <a href="{{ url_for('auth.load_scenario', scenario='household') }}" class="btn btn-sm btn-outline-warning text-start">
+            <i class="bi bi-house-door me-2"></i> Household Manager
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
