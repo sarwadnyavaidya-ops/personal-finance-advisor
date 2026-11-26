@@ -2,6 +2,11 @@
 
 > **An AI-powered, full-stack personal finance management and advisory platform built with Flask, SQLAlchemy, Chart.js, and Google Gemini AI.**
 
+## 🎥 Project Demo
+
+**Live Website:** https://personal-finance-advisor-1mbp.onrender.com/
+
+**Demo Video:** [Watch the Project Demonstration](https://drive.google.com/file/d/1WK7MrQSwGF8LvjcxVwv5fLKpk6gGCn0G/view?usp=sharing)
 ---
 
 ## 🌟 Overview
